@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopLayer", "DesktopLaye
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelLayer", "ModelLayer\ModelLayer.csproj", "{3F49DD5C-6EEC-4505-9C1E-46DEB33E69ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessLay", "BusinessLay\BusinessLay.csproj", "{2D17CBDF-3119-4532-B277-5D555791CDDC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,10 +33,6 @@ Global
 		{3F49DD5C-6EEC-4505-9C1E-46DEB33E69ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F49DD5C-6EEC-4505-9C1E-46DEB33E69ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F49DD5C-6EEC-4505-9C1E-46DEB33E69ED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2D17CBDF-3119-4532-B277-5D555791CDDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2D17CBDF-3119-4532-B277-5D555791CDDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2D17CBDF-3119-4532-B277-5D555791CDDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2D17CBDF-3119-4532-B277-5D555791CDDC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
