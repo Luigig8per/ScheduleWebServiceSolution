@@ -1,6 +1,7 @@
 ﻿using DataLayer;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -25,7 +26,7 @@ namespace wRequest
 
         void webRequest()
         {
-            WebRequest request = WebRequest.Create("http://xml.donbest.com/v2/schedule/?token=mc7bB-!N5-BCA-Mn");
+            WebRequest request = WebRequest.Create("http://xml.donbest.com/v2/schedule/?token=F-!--!!_-vV73-_M");
 
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
@@ -73,7 +74,7 @@ namespace wRequest
         }
 
 
-
+        
         private void iteraChild(XmlNode xmlNode)
         {
 
@@ -95,13 +96,13 @@ namespace wRequest
 
                         if (xmlNode2.Name == "group")
                         {
-                            tableName = "group1";
-
+                            tableName = "groups";
                         }
                         else
                         {
                             tableName = xmlNode2.Name;
                         }
+
 
                         query = "insert into ";
                         query2 = "values ";
@@ -116,8 +117,9 @@ namespace wRequest
                             if (!(xmlNode.Attributes.Count == 0))
                             {
 
-                                query += "(" + xmlNode.Name + "id,";
-                                query2 += "('" + xmlNode.Attributes[0].Value + "',";
+                                query += "(" + xmlNode.Name + "_id,";
+                               
+                                asignQueryValue(query2, xmlNode.Name, xmlNode.Attributes[0].Value);
                             }
                             else
                             {
@@ -137,20 +139,26 @@ namespace wRequest
                             if (xmlNode2.Attributes.Count == 0)
                             {
 
-                                query += tableName + ",";
+                                //'' As he doesn't have childs, his values should be on same table
+                                query=asignQuery1Column(tableName, query);
 
                                 if (xmlNode2.ChildNodes.Count == 1)
-                                    query2 += "'" + xmlNode2.InnerText.Replace("'", "''") + "',";
+
+                                    //'' This one should be changed to uopdate father
+                                   query2= asignQueryValue(query2, tableName, xmlNode2.InnerText.Replace("'", "''"));
+
                                 else
 
                                     if (xmlNode2.Value != null)
                                 {
 
-                                    query2 += "'" + xmlNode2.Value.Replace("'", "''") + "',";
+                                    //query2 += "'" + xmlNode2.Value.Replace("'", "''") + "',";
+                                    query2 = asignQueryValue(query2, tableName, xmlNode2.Value).Replace("'", "''") + "',";
                                 }
                                 else
                                 {
-                                    query2 += "'" + xmlNode2.Value + "',";
+                                    query2 = asignQueryValue(query2, tableName, xmlNode2.Value);
+                                    //query2 += "'" + xmlNode2.Value + "',";
                                 }
 
                                 asignFinalValuesToQueryes(query, query2);
@@ -161,13 +169,16 @@ namespace wRequest
                                 {
 
                                     //Console.Write(xmlNode.Name + " - " + xmlAttribute.Name + " - " + xmlAttribute.Value);
-                                    query += xmlAttribute2.Name + ",";
-                                    if ((xmlNode2.ChildNodes.Count == 1) && (xmlNode2.Attributes.Count == 0))
-                                        //this never gonna happen
-                                        query2 += "'" + xmlNode2.InnerText.Replace("'", "''") + "',";
-                                    else
+                                   
+                                    query = asignQuery1Column(xmlAttribute2.Name, query);
 
-                                        query2 += "'" + xmlAttribute2.Value.Replace("'", "''") + "',";
+                                    if ((xmlNode2.ChildNodes.Count == 1) && (xmlNode2.Attributes.Count == 0))
+                                        //this never gonna happen, as it says attribs.coun=0
+                                       
+                                    query2 = asignQueryValue(query2, xmlAttribute2.Name, xmlNode2.InnerText.Replace("'", "''"));
+                                    else
+                                        query2 = asignQueryValue(query2, xmlAttribute2.Name, xmlAttribute2.Value.Replace("'", "''"));
+                                 
                                 }
 
                                 asignFinalValuesToQueryes(query, query2);
@@ -187,7 +198,28 @@ namespace wRequest
         }
 
         
+        private string asignQuery1Column(string columnName, string query)
+        {
 
+             query += columnName + ",";
+
+            return query;
+        }
+
+        private string asignQueryValue(string query,string columnName, string columnValue)
+        {
+            if ((columnName=="date") && columnValue.Length>8)
+             {
+                columnValue = convertToEastern(columnValue);
+            }
+     
+            query += "'" + columnValue + "',";
+
+            //if (query.StartsWith("(") == false)
+            //    query = "(" + query;
+
+            return query;
+        }
 
         string asignFinalValuesToQueryes(string query1, string query2)
         {
@@ -200,7 +232,14 @@ namespace wRequest
 
             finalQuery = (query1 + " " + query2);
 
+            //try
+            //{ 
             doQuery(finalQuery);
+            //}
+            //catch
+            //{
+
+            //}
             Console.WriteLine(finalQuery);
 
             return (finalQuery);
@@ -217,6 +256,26 @@ namespace wRequest
 
 
 
+        }
+
+        public string convertToEastern(string originalTime)
+        {
+           
+
+            var localTime = DateTimeOffset.Parse(originalTime).UtcDateTime;
+
+            TimeZoneInfo easternTimeZone = TimeZoneInfo.FindSystemTimeZoneById(
+                                 "Eastern Standard Time");
+
+
+            //DateTime dt = DateTime.ParseExact(originalTime, "yyyy-MM-dd'T'HH:mm:ssK",
+            //                     CultureInfo.InvariantCulture,
+            //                     DateTimeStyles.AdjustToUniversal);
+
+            DateTime easternDateTime = TimeZoneInfo.ConvertTimeFromUtc(localTime,
+                                                                       easternTimeZone);
+
+            return easternDateTime.ToString();
         }
 
 
