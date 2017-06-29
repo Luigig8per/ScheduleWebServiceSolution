@@ -119,7 +119,7 @@ namespace wRequest
 
                                 query += "(" + xmlNode.Name + "_id,";
                                
-                                asignQueryValue(query2, xmlNode.Name, xmlNode.Attributes[0].Value);
+                               query2= asignQueryValue(query2, xmlNode.Name, xmlNode.Attributes[0].Value);
                             }
                             else
                             {
@@ -218,6 +218,10 @@ namespace wRequest
             //if (query.StartsWith("(") == false)
             //    query = "(" + query;
 
+            if (!(query.StartsWith("values (")))
+                { 
+               query= query.Replace("values", "values (");
+            }
             return query;
         }
 
