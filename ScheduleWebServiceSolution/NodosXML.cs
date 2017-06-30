@@ -130,9 +130,22 @@ namespace wRequest
                                     { 
                                     //'' This one should be changed to uopdate father
                                     //query2 = asignQueryValue(query2, tableName, xmlNode2.InnerText.Replace("'", "''"));
-                                    query = updateQueryStart(query, xmlNode.Name);
-                                        query2 = "";
-                                query2 = updateQueryValue(query2, xmlNode2.Name, xmlNode2.InnerText.Replace("'", "''"), xmlNode.Attributes[0].Value);
+                                  
+                                        foreach (XmlAttribute xmlAttribute2 in xmlNode.Attributes)
+                                        {
+
+                                            //Console.Write(xmlNode.Name + " - " + xmlAttribute.Name + " - " + xmlAttribute.Value);
+
+                                            query = updateQueryStart(query, xmlNode.Name);
+                                            query2 = "";
+                                            query2 = updateQueryValue(query2, xmlNode2.Name, xmlNode2.InnerText.Replace("'", "''"), xmlNode.Attributes[0].Value);
+
+                                        }
+
+
+
+
+
 
                                     }
                                     else
@@ -162,6 +175,35 @@ namespace wRequest
                             }
                             else
                             {
+
+                                if (xmlNode2.ChildNodes.Count<=1)
+                                {
+                                    if (xmlNode.Attributes.Count > 0)
+                                    {
+                                        //'' This one should be changed to uopdate father
+                                        //query2 = asignQueryValue(query2, tableName, xmlNode2.InnerText.Replace("'", "''"));
+
+                                        foreach (XmlAttribute xmlAttribute2 in xmlNode.Attributes)
+                                        {
+
+                                            //Console.Write(xmlNode.Name + " - " + xmlAttribute.Name + " - " + xmlAttribute.Value);
+
+                                            query = updateQueryStart(query, xmlNode.Name);
+                                            query2 = "";
+                                            query2 = updateQueryValue(query2, xmlAttribute2.Name, xmlAttribute2.Value.Replace("'", "''"), xmlNode.Attributes[0].Value);
+
+                                        }
+
+
+
+
+
+
+                                    }
+                                }
+                                else
+
+                                { 
                                 foreach (XmlAttribute xmlAttribute2 in xmlNode2.Attributes)
                                 {
 
@@ -177,7 +219,7 @@ namespace wRequest
                                         query2 = asignQueryValue(query2, xmlAttribute2.Name, xmlAttribute2.Value.Replace("'", "''"));
 
                                 }
-
+                                }
                                 asignFinalValuesToQueryes(query, query2, tipoConsulta);
 
                             }
@@ -199,7 +241,7 @@ namespace wRequest
                 }
             }
 
-            Console.WriteLine(queriesCount + "lines executed");
+            //Console.WriteLine(queriesCount + "lines executed");
 
 
         }
@@ -247,7 +289,15 @@ namespace wRequest
 
         private string updateQueryValue(string query, string columnName, string columnValue, string column_id)
         {
-            query += ("" + columnName + " = '" + columnValue + "' where id= '" + column_id + "'");
+            if (columnName=="participant")
+            {
+                query += ("" + columnName + " = '" + columnValue + "' where rot= '" + column_id + "'");
+            }
+            else
+            {
+                query += ("" + columnName + " = '" + columnValue + "' where id= '" + column_id + "'");
+            }
+
 
             tipoConsulta = 2;
                 return query;
@@ -255,7 +305,11 @@ namespace wRequest
 
         private string updateQueryStart(string query, string tableName)
         {
-            query = "update " + tableName + " set ";
+            if (tableName == "participant")
+            {
+
+            }
+                query = "update " + tableName + " set ";
 
             return query;
         }
