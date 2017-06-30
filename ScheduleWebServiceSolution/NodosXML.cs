@@ -67,20 +67,21 @@ namespace wRequest
             xmlDoc.LoadXml(xmlText);
 
 
-            iteraChild(xmlDoc.DocumentElement);
+            iteraChild(xmlDoc.DocumentElement,0);
             Console.WriteLine("end");
             Console.WriteLine("end");
 
         }
 
-
+        public int tipoConsulta;
         
-        private void iteraChild(XmlNode xmlNode)
+        private void iteraChild(XmlNode xmlNode, int queriesCount)
         {
 
+            queriesCount+=1;
             string query, query2;
-
-            int cont = 0;
+           
+          
             string tableName;
 
             if (xmlNode.HasChildNodes)
@@ -94,23 +95,12 @@ namespace wRequest
                     {
                         //Define queris concatenated from each field on XML, including attributes, values and childNodes
 
-                        if (xmlNode2.Name == "group")
-                        {
-                            tableName = "groups";
-                        }
-                        else
-                        {
-                            tableName = xmlNode2.Name;
-                        }
+                        tableName = this.renameTableNames(xmlNode2.Name);
 
-
-                        query = "insert into ";
+                        query = "insert into " +  tableName + ""; ;
                         query2 = "values ";
-                        query += tableName + "";
-                        cont += 1;
-                        //Console.WriteLine("Nodo " +  el.Name + ":" + el.Value + " " + el.Name);
-
-
+                       
+                        
                         //'Define index id with id from fatherNode'
                         if (xmlNode2.Attributes != null)
                         {
@@ -119,6 +109,7 @@ namespace wRequest
 
                                 query += "(" + xmlNode.Name + "_id,";
                                
+
                                query2= asignQueryValue(query2, xmlNode.Name, xmlNode.Attributes[0].Value);
                             }
                             else
@@ -129,39 +120,45 @@ namespace wRequest
                             }
 
 
-
-                        }
-
-
-                        if (xmlNode2.Attributes != null)
-                        {
-
                             if (xmlNode2.Attributes.Count == 0)
                             {
-
-                                //'' As he doesn't have childs, his values should be on same table
-                                query=asignQuery1Column(tableName, query);
-
+                               //'' As he doesn't have childs, his values should be on same table
                                 if (xmlNode2.ChildNodes.Count == 1)
-
+                                {
+                                    //Verify that is not the root
+                                    if (xmlNode.Attributes.Count>0)
+                                    { 
                                     //'' This one should be changed to uopdate father
-                                   query2= asignQueryValue(query2, tableName, xmlNode2.InnerText.Replace("'", "''"));
+                                    //query2 = asignQueryValue(query2, tableName, xmlNode2.InnerText.Replace("'", "''"));
+                                    query = updateQueryStart(query, xmlNode.Name);
+                                        query2 = "";
+                                query2 = updateQueryValue(query2, xmlNode2.Name, xmlNode2.InnerText.Replace("'", "''"), xmlNode.Attributes[0].Value);
+
+                                    }
+                                    else
+                                    {
+                                        //Case is root, pending add this query
+                                        query = asignQuery1Column(tableName, query);
+                                        query2 = asignQueryValue(query2, tableName, xmlNode2.InnerText);
+                                    }
+                                }
 
                                 else
 
                                     if (xmlNode2.Value != null)
                                 {
-
+                                    query = asignQuery1Column(tableName, query);
                                     //query2 += "'" + xmlNode2.Value.Replace("'", "''") + "',";
                                     query2 = asignQueryValue(query2, tableName, xmlNode2.Value).Replace("'", "''") + "',";
                                 }
                                 else
                                 {
+                                    query = asignQuery1Column(tableName, query);
                                     query2 = asignQueryValue(query2, tableName, xmlNode2.Value);
                                     //query2 += "'" + xmlNode2.Value + "',";
                                 }
 
-                                asignFinalValuesToQueryes(query, query2);
+                                asignFinalValuesToQueryes(query, query2,tipoConsulta);
                             }
                             else
                             {
@@ -169,34 +166,55 @@ namespace wRequest
                                 {
 
                                     //Console.Write(xmlNode.Name + " - " + xmlAttribute.Name + " - " + xmlAttribute.Value);
-                                   
+
                                     query = asignQuery1Column(xmlAttribute2.Name, query);
 
-                                    if ((xmlNode2.ChildNodes.Count == 1) && (xmlNode2.Attributes.Count == 0))
-                                        //this never gonna happen, as it says attribs.coun=0
-                                       
-                                    query2 = asignQueryValue(query2, xmlAttribute2.Name, xmlNode2.InnerText.Replace("'", "''"));
-                                    else
+                                    //if ((xmlNode2.ChildNodes.Count == 1) && (xmlNode2.Attributes.Count == 0))
+                                    //    //this never gonna happen, as it says attribs.coun=0
+
+                                    //    query2 = asignQueryValue(query2, xmlAttribute2.Name, xmlNode2.InnerText.Replace("'", "''"));
+                                    //else
                                         query2 = asignQueryValue(query2, xmlAttribute2.Name, xmlAttribute2.Value.Replace("'", "''"));
-                                 
+
                                 }
 
-                                asignFinalValuesToQueryes(query, query2);
+                                asignFinalValuesToQueryes(query, query2, tipoConsulta);
 
                             }
+
+
                         }
+
+                        //if (xmlNode2.Attributes != null)
+                        //{
+
+                            
+                        //}
 
                         //If node doesn't have attributes, then just go to his childs, with next statement, applies also if have attributes.
 
-                        iteraChild(xmlNode2);
+                        iteraChild(xmlNode2, queriesCount);
 
                     }
                 }
             }
 
+            Console.WriteLine(queriesCount + "lines executed");
+
 
         }
 
+        private string renameTableNames(string tableName)
+        {
+                    //Some table like 'group' need to change name to avoid problems with sql
+            if (tableName == "group")
+            {
+                tableName = "groups";
+            }
+          
+
+            return tableName;
+        }
         
         private string asignQuery1Column(string columnName, string query)
         {
@@ -222,33 +240,58 @@ namespace wRequest
                 { 
                query= query.Replace("values", "values (");
             }
+
+            tipoConsulta = 1;
             return query;
         }
 
-        string asignFinalValuesToQueryes(string query1, string query2)
+        private string updateQueryValue(string query, string columnName, string columnValue, string column_id)
+        {
+            query += ("" + columnName + " = '" + columnValue + "' where id= '" + column_id + "'");
+
+            tipoConsulta = 2;
+                return query;
+        }
+
+        private string updateQueryStart(string query, string tableName)
+        {
+            query = "update " + tableName + " set ";
+
+            return query;
+        }
+
+        string asignFinalValuesToQueryes(string query1, string query2, int tipoConsulta)
+
         {
             string finalQuery;
+            if (tipoConsulta==1)
+            { 
             query1 += "timeReceived) ";
             query2 += "getDate())";
 
             query1 = query1.Replace(",)", ")");
             query2 = query2.Replace(",)", ")");
 
+            }
+         
             finalQuery = (query1 + " " + query2);
 
-            //try
-            //{ 
-            doQuery(finalQuery);
-            //}
-            //catch
-            //{
-
-            //}
             Console.WriteLine(finalQuery);
+            try
+            {
+                doQuery(finalQuery);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Insert error:" + ex.Message);
+            }
+
+      
+         
 
             return (finalQuery);
 
-
+          
         }
 
         object doQuery(string query)

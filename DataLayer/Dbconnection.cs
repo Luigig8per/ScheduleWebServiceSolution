@@ -38,7 +38,14 @@ namespace DataLayer
             SqlCommand cmd = new SqlCommand(insertString, con);
             cmd.Connection = getConn();
             object obj = -1;
+            try
+            { 
             obj = cmd.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("DB Error:" + ex.Message);
+            }
             con.Close();
             return obj;
 
