@@ -168,7 +168,7 @@ namespace wRequest
                             else
                             {
 
-                                if (xmlNode2.ChildNodes.Count<=1)
+                                if (grandChildNodesCount(xmlNode2)==0)
                                 {
                                     if (xmlNode.Attributes.Count > 0)
                                     {
