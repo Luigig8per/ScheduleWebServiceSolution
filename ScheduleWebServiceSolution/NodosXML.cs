@@ -167,7 +167,7 @@ namespace wRequest
                             }
                             else
                             {
-
+                                //if just have childs, but no more, its time to add to database
                                 if (grandChildNodesCount(xmlNode2)==0)
                                 {
                                     if (xmlNode.Attributes.Count > 0)
