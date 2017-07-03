@@ -106,10 +106,7 @@ namespace wRequest
                         {
                             if (!(xmlNode.Attributes.Count == 0))
                             {
-
-                                query += "(" + xmlNode.Name + "_id,";
-                               
-
+                               query += "(" + xmlNode.Name + "_id,";                             
                                query2= asignQueryValue(query2, xmlNode.Name, xmlNode.Attributes[0].Value);
                             }
                             else
@@ -123,7 +120,7 @@ namespace wRequest
                             if (xmlNode2.Attributes.Count == 0)
                             {
                                //'' As he doesn't have childs, his values should be on same table
-                                if (xmlNode2.ChildNodes.Count == 1)
+                                if (grandChildNodesCount(xmlNode2)==0)
                                 {
                                     //Verify that is not the root
                                     if (xmlNode.Attributes.Count>0)
@@ -135,18 +132,11 @@ namespace wRequest
                                         {
 
                                             //Console.Write(xmlNode.Name + " - " + xmlAttribute.Name + " - " + xmlAttribute.Value);
-
                                             query = updateQueryStart(query, xmlNode.Name);
                                             query2 = "";
                                             query2 = updateQueryValue(query2, xmlNode2.Name, xmlNode2.InnerText.Replace("'", "''"), xmlNode.Attributes[0].Value);
 
                                         }
-
-
-
-
-
-
                                     }
                                     else
                                     {
@@ -166,6 +156,8 @@ namespace wRequest
                                 }
                                 else
                                 {
+
+                                    //this OONE SHOULD NOT BE EXECUTED? TEST,
                                     query = asignQuery1Column(tableName, query);
                                     query2 = asignQueryValue(query2, tableName, xmlNode2.Value);
                                     //query2 += "'" + xmlNode2.Value + "',";
@@ -194,11 +186,6 @@ namespace wRequest
 
                                         }
 
-
-
-
-
-
                                     }
                                 }
                                 else
@@ -207,7 +194,7 @@ namespace wRequest
                                 foreach (XmlAttribute xmlAttribute2 in xmlNode2.Attributes)
                                 {
 
-                                    //Console.Write(xmlNode.Name + " - " + xmlAttribute.Name + " - " + xmlAttribute.Value);
+                                
 
                                     query = asignQuery1Column(xmlAttribute2.Name, query);
 
@@ -227,11 +214,7 @@ namespace wRequest
 
                         }
 
-                        //if (xmlNode2.Attributes != null)
-                        //{
-
-                            
-                        //}
+                    
 
                         //If node doesn't have attributes, then just go to his childs, with next statement, applies also if have attributes.
 
@@ -256,6 +239,30 @@ namespace wRequest
           
 
             return tableName;
+        }
+
+        private int grandChildNodesCount(XmlNode xmlNode)
+        {
+            Boolean res;
+            int grandChildCount=0;
+
+            if (xmlNode.HasChildNodes)
+            {
+
+                foreach(XmlNode node in xmlNode.ChildNodes)
+                {
+                    if (node.HasChildNodes)
+                    { 
+                        grandChildCount+=1;
+                    }
+                  
+                }
+
+            }
+
+
+            return grandChildCount;
+
         }
         
         private string asignQuery1Column(string columnName, string query)
