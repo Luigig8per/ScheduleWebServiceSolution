@@ -80,6 +80,7 @@ namespace wRequest
 
             queriesCount += 1;
             string query, query2;
+            int participantCount=0;
 
 
             string tableName;
@@ -181,6 +182,7 @@ namespace wRequest
                                             //Console.Write(xmlNode.Name + " - " + xmlAttribute.Name + " - " + xmlAttribute.Value);
 
                                             if (xmlNode2.Name == "participant")
+                                                
                                             {
                                                 query = asignQuery1Column(xmlAttribute2.Name, query);
                                                 query2 = asignQueryValue(query2, xmlAttribute2.Name, xmlAttribute2.Value);
@@ -227,9 +229,7 @@ namespace wRequest
                         }
 
 
-
                         //If node doesn't have attributes, then just go to his childs, with next statement, applies also if have attributes.
-
                         iteraChild(xmlNode2, queriesCount);
 
                     }
