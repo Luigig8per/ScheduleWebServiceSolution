@@ -134,7 +134,7 @@ namespace wRequest
                                             //Console.Write(xmlNode.Name + " - " + xmlAttribute.Name + " - " + xmlAttribute.Value);
                                             query = updateQueryStart(query, xmlNode.Name);
                                             query2 = "";
-                                            query2 = updateQueryValue(query2, xmlNode2.Name, xmlNode2.InnerText.Replace("'", "''"), xmlNode.Attributes[0].Value);
+                                            query2 = updateQueryValue(query2, xmlNode2.Name, xmlNode2.InnerText.Replace("'", "''"), xmlNode.Attributes[0].Value, xmlNode.Name);
 
                                         }
                                     }
@@ -175,14 +175,16 @@ namespace wRequest
                                         //'' This one should be changed to uopdate father
                                         //query2 = asignQueryValue(query2, tableName, xmlNode2.InnerText.Replace("'", "''"));
 
-                                        foreach (XmlAttribute xmlAttribute2 in xmlNode.Attributes)
+                                        foreach (XmlAttribute xmlAttribute2 in xmlNode2.Attributes)
                                         {
 
                                             //Console.Write(xmlNode.Name + " - " + xmlAttribute.Name + " - " + xmlAttribute.Value);
 
                                             query = updateQueryStart(query, xmlNode.Name);
                                             query2 = "";
-                                            query2 = updateQueryValue(query2, xmlAttribute2.Name, xmlAttribute2.Value.Replace("'", "''"), xmlNode.Attributes[0].Value);
+                                            query2 = updateQueryValue(query2,xmlNode2.Name + "_" + xmlAttribute2.Name, xmlAttribute2.Value.Replace("'", "''"), xmlNode.Attributes[0].Value, xmlNode.Name);
+
+                                            asignFinalValuesToQueryes(query, query2, 2);
 
                                         }
 
@@ -244,6 +246,7 @@ namespace wRequest
         private int grandChildNodesCount(XmlNode xmlNode)
         {
             Boolean res;
+
             int grandChildCount=0;
 
             if (xmlNode.HasChildNodes)
@@ -254,6 +257,16 @@ namespace wRequest
                     if (node.HasChildNodes)
                     { 
                         grandChildCount+=1;
+                        
+
+                    }
+                    else
+                    {
+                       
+                        if (node.Attributes != null)
+                        {
+                        grandChildCount += node.Attributes.Count;
+                        }
                     }
                   
                 }
@@ -294,9 +307,9 @@ namespace wRequest
             return query;
         }
 
-        private string updateQueryValue(string query, string columnName, string columnValue, string column_id)
+        private string updateQueryValue(string query, string columnName, string columnValue, string column_id, string tableName)
         {
-            if (columnName=="participant")
+            if (tableName=="participant")
             {
                 query += ("" + columnName + " = '" + columnValue + "' where rot= '" + column_id + "'");
             }
