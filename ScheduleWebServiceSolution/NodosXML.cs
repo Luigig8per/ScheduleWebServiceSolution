@@ -67,21 +67,21 @@ namespace wRequest
             xmlDoc.LoadXml(xmlText);
 
 
-            iteraChild(xmlDoc.DocumentElement,0);
+            iteraChild(xmlDoc.DocumentElement, 0);
             Console.WriteLine("end");
             Console.WriteLine("end");
 
         }
 
         public int tipoConsulta;
-        
+
         private void iteraChild(XmlNode xmlNode, int queriesCount)
         {
 
-            queriesCount+=1;
+            queriesCount += 1;
             string query, query2;
-           
-          
+
+
             string tableName;
 
             if (xmlNode.HasChildNodes)
@@ -97,17 +97,17 @@ namespace wRequest
 
                         tableName = this.renameTableNames(xmlNode2.Name);
 
-                        query = "insert into " +  tableName + ""; ;
+                        query = "insert into " + tableName + ""; ;
                         query2 = "values ";
-                       
-                        
+
+
                         //'Define index id with id from fatherNode'
                         if (xmlNode2.Attributes != null)
                         {
                             if (!(xmlNode.Attributes.Count == 0))
                             {
-                               query += "(" + xmlNode.Name + "_id,";                             
-                               query2= asignQueryValue(query2, xmlNode.Name, xmlNode.Attributes[0].Value);
+                                query += "(" + xmlNode.Name + "_id,";
+                                query2 = asignQueryValue(query2, xmlNode.Name, xmlNode.Attributes[0].Value);
                             }
                             else
                             {
@@ -119,15 +119,15 @@ namespace wRequest
 
                             if (xmlNode2.Attributes.Count == 0)
                             {
-                               //'' As he doesn't have childs, his values should be on same table
-                                if (grandChildNodesCount(xmlNode2)==0)
+                                //'' As he doesn't have childs, his values should be on same table
+                                if (grandChildNodesCount(xmlNode2) == 0)
                                 {
                                     //Verify that is not the root
-                                    if (xmlNode.Attributes.Count>0)
-                                    { 
-                                    //'' This one should be changed to uopdate father
-                                    //query2 = asignQueryValue(query2, tableName, xmlNode2.InnerText.Replace("'", "''"));
-                                  
+                                    if (xmlNode.Attributes.Count > 0)
+                                    {
+                                        //'' This one should be changed to uopdate father
+                                        //query2 = asignQueryValue(query2, tableName, xmlNode2.InnerText.Replace("'", "''"));
+
                                         foreach (XmlAttribute xmlAttribute2 in xmlNode.Attributes)
                                         {
 
@@ -163,12 +163,12 @@ namespace wRequest
                                     //query2 += "'" + xmlNode2.Value + "',";
                                 }
 
-                                asignFinalValuesToQueryes(query, query2,tipoConsulta);
+                                asignFinalValuesToQueryes(query, query2, tipoConsulta);
                             }
                             else
                             {
                                 //if just have childs, but no more, its time to add to database
-                                if (grandChildNodesCount(xmlNode2)==0)
+                                if (grandChildNodesCount(xmlNode2) == 0)
                                 {
                                     if (xmlNode.Attributes.Count > 0)
                                     {
@@ -180,34 +180,44 @@ namespace wRequest
 
                                             //Console.Write(xmlNode.Name + " - " + xmlAttribute.Name + " - " + xmlAttribute.Value);
 
-                                            query = updateQueryStart(query, xmlNode.Name);
-                                            query2 = "";
-                                            query2 = updateQueryValue(query2,xmlNode2.Name + "_" + xmlAttribute2.Name, xmlAttribute2.Value.Replace("'", "''"), xmlNode.Attributes[0].Value, xmlNode.Name);
+                                            if (xmlNode2.Name == "participant")
+                                            {
+                                                query = asignQuery1Column(xmlAttribute2.Name, query);
+                                                query2 = asignQueryValue(query2, xmlAttribute2.Name, xmlAttribute2.Value);
+                                            }
+                                            else
+                                            {
+                                                query = updateQueryStart(query, xmlNode.Name);
+                                                query2 = "";
+                                                query2 = updateQueryValue(query2, xmlNode2.Name + "_" + xmlAttribute2.Name, xmlAttribute2.Value.Replace("'", "''"), xmlNode.Attributes[0].Value, xmlNode.Name);
 
-                                            asignFinalValuesToQueryes(query, query2, 2);
-
+                                                asignFinalValuesToQueryes(query, query2, 2);
+                                            }
                                         }
 
                                     }
                                 }
+
+
+                                //Case node still have grandChilds
                                 else
 
-                                { 
-                                foreach (XmlAttribute xmlAttribute2 in xmlNode2.Attributes)
                                 {
+                                    foreach (XmlAttribute xmlAttribute2 in xmlNode2.Attributes)
+                                    {
 
-                                
 
-                                    query = asignQuery1Column(xmlAttribute2.Name, query);
 
-                                    //if ((xmlNode2.ChildNodes.Count == 1) && (xmlNode2.Attributes.Count == 0))
-                                    //    //this never gonna happen, as it says attribs.coun=0
+                                        query = asignQuery1Column(xmlAttribute2.Name, query);
 
-                                    //    query2 = asignQueryValue(query2, xmlAttribute2.Name, xmlNode2.InnerText.Replace("'", "''"));
-                                    //else
+                                        //if ((xmlNode2.ChildNodes.Count == 1) && (xmlNode2.Attributes.Count == 0))
+                                        //    //this never gonna happen, as it says attribs.coun=0
+
+                                        //    query2 = asignQueryValue(query2, xmlAttribute2.Name, xmlNode2.InnerText.Replace("'", "''"));
+                                        //else
                                         query2 = asignQueryValue(query2, xmlAttribute2.Name, xmlAttribute2.Value.Replace("'", "''"));
 
-                                }
+                                    }
                                 }
                                 asignFinalValuesToQueryes(query, query2, tipoConsulta);
 
@@ -216,7 +226,7 @@ namespace wRequest
 
                         }
 
-                    
+
 
                         //If node doesn't have attributes, then just go to his childs, with next statement, applies also if have attributes.
 
@@ -233,12 +243,12 @@ namespace wRequest
 
         private string renameTableNames(string tableName)
         {
-                    //Some table like 'group' need to change name to avoid problems with sql
+            //Some table like 'group' need to change name to avoid problems with sql
             if (tableName == "group")
             {
                 tableName = "groups";
             }
-          
+
 
             return tableName;
         }
@@ -247,28 +257,28 @@ namespace wRequest
         {
             Boolean res;
 
-            int grandChildCount=0;
+            int grandChildCount = 0;
 
             if (xmlNode.HasChildNodes)
             {
 
-                foreach(XmlNode node in xmlNode.ChildNodes)
+                foreach (XmlNode node in xmlNode.ChildNodes)
                 {
                     if (node.HasChildNodes)
-                    { 
-                        grandChildCount+=1;
-                        
+                    {
+                        grandChildCount += 1;
+
 
                     }
                     else
                     {
-                       
+
                         if (node.Attributes != null)
                         {
-                        grandChildCount += node.Attributes.Count;
+                            grandChildCount += node.Attributes.Count;
                         }
                     }
-                  
+
                 }
 
             }
@@ -277,30 +287,30 @@ namespace wRequest
             return grandChildCount;
 
         }
-        
+
         private string asignQuery1Column(string columnName, string query)
         {
 
-             query += columnName + ",";
+            query += columnName + ",";
 
             return query;
         }
 
-        private string asignQueryValue(string query,string columnName, string columnValue)
+        private string asignQueryValue(string query, string columnName, string columnValue)
         {
-            if ((columnName=="date") && columnValue.Length>8)
-             {
+            if ((columnName == "date") && columnValue.Length > 8)
+            {
                 columnValue = convertToEastern(columnValue);
             }
-     
+
             query += "'" + columnValue + "',";
 
             //if (query.StartsWith("(") == false)
             //    query = "(" + query;
 
             if (!(query.StartsWith("values (")))
-                { 
-               query= query.Replace("values", "values (");
+            {
+                query = query.Replace("values", "values (");
             }
 
             tipoConsulta = 1;
@@ -309,7 +319,7 @@ namespace wRequest
 
         private string updateQueryValue(string query, string columnName, string columnValue, string column_id, string tableName)
         {
-            if (tableName=="participant")
+            if (tableName == "participant")
             {
                 query += ("" + columnName + " = '" + columnValue + "' where rot= '" + column_id + "'");
             }
@@ -320,7 +330,7 @@ namespace wRequest
 
 
             tipoConsulta = 2;
-                return query;
+            return query;
         }
 
         private string updateQueryStart(string query, string tableName)
@@ -329,7 +339,7 @@ namespace wRequest
             {
 
             }
-                query = "update " + tableName + " set ";
+            query = "update " + tableName + " set ";
 
             return query;
         }
@@ -338,16 +348,16 @@ namespace wRequest
 
         {
             string finalQuery;
-            if (tipoConsulta==1)
-            { 
-            query1 += "timeReceived) ";
-            query2 += "getDate())";
+            if (tipoConsulta == 1)
+            {
+                query1 += "timeReceived) ";
+                query2 += "getDate())";
 
-            query1 = query1.Replace(",)", ")");
-            query2 = query2.Replace(",)", ")");
+                query1 = query1.Replace(",)", ")");
+                query2 = query2.Replace(",)", ")");
 
             }
-         
+
             finalQuery = (query1 + " " + query2);
 
             Console.WriteLine(finalQuery);
@@ -360,12 +370,12 @@ namespace wRequest
                 Console.WriteLine("Insert error:" + ex.Message);
             }
 
-      
-         
+
+
 
             return (finalQuery);
 
-          
+
         }
 
         object doQuery(string query)
@@ -381,7 +391,7 @@ namespace wRequest
 
         public string convertToEastern(string originalTime)
         {
-           
+
 
             var localTime = DateTimeOffset.Parse(originalTime).UtcDateTime;
 
