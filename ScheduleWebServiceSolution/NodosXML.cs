@@ -92,7 +92,18 @@ namespace wRequest
                 foreach (XmlNode xmlNode2 in xmlNode.ChildNodes)
                 {
 
-                    if (!(xmlNode2.Name == "lines"))
+                    if ((xmlNode2.Name == "lines"))
+                    {
+                       
+                    }
+
+                    else if(xmlNode2.Name == "event")
+                    {
+                        storeEventFields(xmlNode2);
+                    }
+                      
+                    else
+
                     {
                         //Define queris concatenated from each field on XML, including attributes, values and childNodes
 
@@ -237,6 +248,76 @@ namespace wRequest
             }
 
             //Console.WriteLine(queriesCount + "lines executed");
+
+
+        }
+
+        private Dictionary<string, string>  addAttsToDictionary(XmlNode xmlNode, Dictionary<string, string> dictionary, Boolean child)
+        {
+            foreach (XmlAttribute xmlAttribute2 in xmlNode.Attributes)
+
+            {
+                if (child)
+                { 
+
+                    if ((xmlNode.Name)== "participant")
+
+                        if (this.isAway(xmlNode))
+                        //To check if have attribute AWAY
+                        {
+                            dictionary.Add(xmlNode.Name + "_away " + "_" + xmlAttribute2.Name, xmlAttribute2.Value);
+                        }
+                    else
+                        {
+                            dictionary.Add(xmlNode.Name + "_home " + "_" + xmlAttribute2.Name, xmlAttribute2.Value);
+                        }
+                   
+                    else
+                    { 
+                        dictionary.Add(xmlNode.Name + "_" + xmlAttribute2.Name, xmlAttribute2.Value);
+                    }
+
+
+                }
+                else
+                    
+                {
+                    dictionary.Add(xmlAttribute2.Name, xmlAttribute2.Value);
+
+                }
+            }
+
+            return dictionary;
+        }
+
+        private Boolean isAway(XmlNode xmlNode)
+        {
+            Boolean res = false;
+
+           foreach (XmlAttribute xmlAttribute2 in xmlNode.Attributes)
+            {
+                if ((xmlAttribute2.Name=="AWAY") && (xmlAttribute2.Value=="AWAY"))
+                {
+                    res = true;
+                }
+            }
+            return res;
+        }
+
+
+        private void storeEventFields(XmlNode xmlNode)
+        {
+            Dictionary<string, string> dictionary = new Dictionary<string, string>();
+
+
+           dictionary= addAttsToDictionary(xmlNode, dictionary, false);
+
+            foreach (XmlNode xmlNode2 in xmlNode.ChildNodes )
+            {
+                dictionary = addAttsToDictionary(xmlNode2, dictionary, true);
+                dictionary.Add(xmlNode2.Name, xmlNode2.InnerText);
+
+            }
 
 
         }
