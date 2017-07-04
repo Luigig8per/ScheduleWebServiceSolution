@@ -67,7 +67,7 @@ namespace wRequest
             xmlDoc.LoadXml(xmlText);
 
 
-            iteraChild(xmlDoc.DocumentElement, 0);
+            iteraChild(xmlDoc.DocumentElement, 0, "", "");
             Console.WriteLine("end");
             Console.WriteLine("end");
 
@@ -75,21 +75,13 @@ namespace wRequest
 
         public int tipoConsulta;
 
-        string defineQuery1Start(string query, string tableName)
-        {
-            return "insert into " + tableName + "";
-        }
-
-        string defineQuery2Start()
-        {
-            return "values ";
-        }
-        private void iteraChild(XmlNode xmlNode, int queriesCount)
+        private void iteraChild(XmlNode xmlNode, int queriesCount, string sportId, string leagueId)
         {
 
             queriesCount += 1;
             string query="", query2="";
-            int participantCount=0;
+           
+         
             Dictionary<string, string> dictionary = new Dictionary<string, string>();
 
             string tableName;
@@ -99,21 +91,45 @@ namespace wRequest
                 //'because its from the root, all the child nodes gonna be checked'
 
                 foreach (XmlNode xmlNode2 in xmlNode.ChildNodes)
+
+                
+
                 {
+
+                    if (xmlNode2.Name == "league")
+                    {
+                        leagueId = (xmlNode2.Attributes[0].Value);
+                     
+                       
+                    }
+                    else if (xmlNode2.Name=="sport")
+                    {
+                        sportId = (xmlNode2.Attributes[0].Value);
+                    }
+
 
                     if ((xmlNode2.Name == "lines"))
                     {
-                       
+                   
                     }
 
                     else if(xmlNode2.Name == "event")
                     {
-                        query = defineQuery1Start(query,xmlNode2.Name );
-                        query2 = defineQuery2Start();
 
                        dictionary= storeEventFields(xmlNode2);
+                        query = "insert into event ";
+                        query2 = "values ";
 
-                        foreach(var item in dictionary)
+                        query += "(" + xmlNode.Name + "_id,";
+                        query2 = asignQueryValue(query2, xmlNode.Name, xmlNode.Attributes[0].Value);
+
+                        query = asignQuery1Column("sport_id", query);
+                        query2 = asignQueryValue(query2, "sport_id", sportId);
+
+                        query = asignQuery1Column("league_id", query);
+                        query2 = asignQueryValue(query2, "league_id", leagueId);
+
+                        foreach (var item in dictionary)
                         {
                             query = asignQuery1Column(item.Key, query);
                             query2 = asignQueryValue(query2, item.Key, item.Value);
@@ -128,15 +144,12 @@ namespace wRequest
 
                     {
                         //Define queris concatenated from each field on XML, including attributes, values and childNodes
+                       
 
                         tableName = this.renameTableNames(xmlNode2.Name);
 
-                        query = "insert into " + tableName + ""; 
+                        query = "insert into " + tableName + ""; ;
                         query2 = "values ";
-
-
-                        query = asignQuery1Column(tableName, query);
-                        query2 = asignQueryValue(query2, tableName, xmlNode2.InnerText);
 
 
                         //'Define index id with id from fatherNode'
@@ -267,7 +280,7 @@ namespace wRequest
 
 
                         //If node doesn't have attributes, then just go to his childs, with next statement, applies also if have attributes.
-                        iteraChild(xmlNode2, queriesCount);
+                        iteraChild(xmlNode2, queriesCount, sportId, leagueId);
 
                     }
                 }
@@ -280,7 +293,7 @@ namespace wRequest
 
         private Dictionary<string, string>  addAttsToDictionary(XmlNode xmlNode, Dictionary<string, string> dictionary, Boolean child)
         {
-            string xmlNodeName="";
+            string xmlNodeName="";string sideValue;
 
             if (!(xmlNode.Name == "lines"))
             {
@@ -295,24 +308,24 @@ namespace wRequest
 
                             if ((xmlNode.Name) == "participant")
                             {
-                                if (this.isAway(xmlNode))
+                                sideValue = this.sideValue(xmlNode);
+
+                                if (!(sideValue==""))
                                 
                                 //To check if have attribute AWAY
                                 {
-                                    xmlNodeName = xmlNode.Name + "_away" + "_";
+                                    xmlNodeName = xmlNode.Name + "_" + sideValue + "" + "_";
                                     
                                 }
-                                else
-                                {
-                                    xmlNodeName = xmlNode.Name + "_home" + "_";
-                                   
-                                }
-
-                                 dictionary.Add(xmlNodeName + xmlAttribute2.Name, xmlAttribute2.Value);
-
-
-
                               
+                                try
+                                { 
+                                 dictionary.Add(xmlNodeName + xmlAttribute2.Name, xmlAttribute2.Value);
+                                }
+                                catch
+                                {
+                                    Console.WriteLine("ya existe " + xmlNodeName + xmlAttribute2.Name, ", " + xmlAttribute2.Value);
+                                }
 
                             }
 
@@ -337,11 +350,22 @@ namespace wRequest
                     {
                         foreach (XmlNode xmlNode2 in xmlNode.ChildNodes)
                         {
+                             if (!(xmlNode2.Name=="pitcher"))
+                                { 
                             foreach (XmlAttribute xmlAttribute3 in xmlNode2.Attributes)
                             {
+                                        try
+                                        { 
                                 dictionary.Add(xmlNodeName + xmlAttribute3.Name, xmlAttribute3.Value);
+                                        }
+                                        catch
+                                        {
+                                            Console.WriteLine("ya existe " + xmlNodeName + xmlAttribute3.Name, ", " + xmlAttribute3.Value);
+                                        }
+
                             }
-                        }
+                                }
+                            }
                     }
                     }
 
@@ -355,15 +379,15 @@ namespace wRequest
             return dictionary;
         }
 
-        private Boolean isAway(XmlNode xmlNode)
+        private string sideValue(XmlNode xmlNode)
         {
-            Boolean res = false;
+            string res = "";
 
            foreach (XmlAttribute xmlAttribute2 in xmlNode.Attributes)
             {
-                if ((xmlAttribute2.Name=="side") && (xmlAttribute2.Value=="AWAY"))
+                if ((xmlAttribute2.Name=="side"))
                 {
-                    res = true;
+                    res = xmlAttribute2.Value;
                 }
             }
             return res;
