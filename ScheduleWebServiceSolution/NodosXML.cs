@@ -75,13 +75,22 @@ namespace wRequest
 
         public int tipoConsulta;
 
+        string defineQuery1Start(string query, string tableName)
+        {
+            return "insert into " + tableName + "";
+        }
+
+        string defineQuery2Start()
+        {
+            return "values ";
+        }
         private void iteraChild(XmlNode xmlNode, int queriesCount)
         {
 
             queriesCount += 1;
-            string query, query2;
+            string query="", query2="";
             int participantCount=0;
-
+            Dictionary<string, string> dictionary = new Dictionary<string, string>();
 
             string tableName;
 
@@ -99,7 +108,20 @@ namespace wRequest
 
                     else if(xmlNode2.Name == "event")
                     {
-                        storeEventFields(xmlNode2);
+                        query = defineQuery1Start(query,xmlNode2.Name );
+                        query2 = defineQuery2Start();
+
+                       dictionary= storeEventFields(xmlNode2);
+
+                        foreach(var item in dictionary)
+                        {
+                            query = asignQuery1Column(item.Key, query);
+                            query2 = asignQueryValue(query2, item.Key, item.Value);
+
+
+                        }
+
+                        asignFinalValuesToQueryes(query, query2, tipoConsulta);
                     }
                       
                     else
@@ -109,8 +131,12 @@ namespace wRequest
 
                         tableName = this.renameTableNames(xmlNode2.Name);
 
-                        query = "insert into " + tableName + ""; ;
+                        query = "insert into " + tableName + ""; 
                         query2 = "values ";
+
+
+                        query = asignQuery1Column(tableName, query);
+                        query2 = asignQueryValue(query2, tableName, xmlNode2.InnerText);
 
 
                         //'Define index id with id from fatherNode'
@@ -254,37 +280,76 @@ namespace wRequest
 
         private Dictionary<string, string>  addAttsToDictionary(XmlNode xmlNode, Dictionary<string, string> dictionary, Boolean child)
         {
-            foreach (XmlAttribute xmlAttribute2 in xmlNode.Attributes)
+            string xmlNodeName="";
 
+            if (!(xmlNode.Name == "lines"))
             {
-                if (child)
-                { 
+                if (xmlNode.Attributes.Count > 0)
+                {
+                    foreach (XmlAttribute xmlAttribute2 in xmlNode.Attributes)
 
-                    if ((xmlNode.Name)== "participant")
+                    {
+                        if (child) 
+                            //If its child, first the name of father will be writed
+                        {
 
-                        if (this.isAway(xmlNode))
-                        //To check if have attribute AWAY
-                        {
-                            dictionary.Add(xmlNode.Name + "_away " + "_" + xmlAttribute2.Name, xmlAttribute2.Value);
+                            if ((xmlNode.Name) == "participant")
+                            {
+                                if (this.isAway(xmlNode))
+                                
+                                //To check if have attribute AWAY
+                                {
+                                    xmlNodeName = xmlNode.Name + "_away" + "_";
+                                    
+                                }
+                                else
+                                {
+                                    xmlNodeName = xmlNode.Name + "_home" + "_";
+                                   
+                                }
+
+                                 dictionary.Add(xmlNodeName + xmlAttribute2.Name, xmlAttribute2.Value);
+
+
+
+                              
+
+                            }
+
+                            else
+                            {
+                                dictionary.Add(xmlNode.Name + "_" + xmlAttribute2.Name, xmlAttribute2.Value);
+                            }
+
+
                         }
-                    else
+                        else
+
                         {
-                            dictionary.Add(xmlNode.Name + "_home " + "_" + xmlAttribute2.Name, xmlAttribute2.Value);
+                            dictionary.Add(xmlAttribute2.Name, xmlAttribute2.Value);
+
                         }
-                   
-                    else
+                    }
+
+                    if ((xmlNode.Name) == "participant")
                     { 
-                        dictionary.Add(xmlNode.Name + "_" + xmlAttribute2.Name, xmlAttribute2.Value);
+                        if (xmlNode.HasChildNodes)
+                    {
+                        foreach (XmlNode xmlNode2 in xmlNode.ChildNodes)
+                        {
+                            foreach (XmlAttribute xmlAttribute3 in xmlNode2.Attributes)
+                            {
+                                dictionary.Add(xmlNodeName + xmlAttribute3.Name, xmlAttribute3.Value);
+                            }
+                        }
+                    }
                     }
 
 
                 }
                 else
-                    
-                {
-                    dictionary.Add(xmlAttribute2.Name, xmlAttribute2.Value);
+                    dictionary.Add(xmlNode.Name, xmlNode.InnerText);
 
-                }
             }
 
             return dictionary;
@@ -296,7 +361,7 @@ namespace wRequest
 
            foreach (XmlAttribute xmlAttribute2 in xmlNode.Attributes)
             {
-                if ((xmlAttribute2.Name=="AWAY") && (xmlAttribute2.Value=="AWAY"))
+                if ((xmlAttribute2.Name=="side") && (xmlAttribute2.Value=="AWAY"))
                 {
                     res = true;
                 }
@@ -305,7 +370,7 @@ namespace wRequest
         }
 
 
-        private void storeEventFields(XmlNode xmlNode)
+       Dictionary<string,string> storeEventFields(XmlNode xmlNode)
         {
             Dictionary<string, string> dictionary = new Dictionary<string, string>();
 
@@ -315,10 +380,11 @@ namespace wRequest
             foreach (XmlNode xmlNode2 in xmlNode.ChildNodes )
             {
                 dictionary = addAttsToDictionary(xmlNode2, dictionary, true);
-                dictionary.Add(xmlNode2.Name, xmlNode2.InnerText);
+              
 
             }
 
+            return dictionary;
 
         }
 
