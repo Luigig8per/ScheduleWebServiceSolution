@@ -365,6 +365,23 @@ namespace wRequest
 
                             }
                                 }
+
+                             else
+                                {
+                                    foreach (XmlAttribute xmlAttribute3 in xmlNode2.Attributes)
+                                    {
+                                        try
+                                        {
+                                            dictionary.Add(xmlNodeName + xmlNode2.Name + "_" + xmlAttribute3.Name, xmlAttribute3.Value);
+                                        }
+                                        catch
+                                        {
+                                            Console.WriteLine("ya existe " + xmlNodeName + "_" + xmlAttribute3.Name, ", " + xmlAttribute3.Value);
+                                        }
+
+                                    }
+                                }
+
                             }
                     }
                     }
