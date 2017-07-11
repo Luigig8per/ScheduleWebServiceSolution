@@ -15,25 +15,21 @@ namespace wRequest
 {
     class webReq
     {
+        public int tipoConsulta;
         static void Main(string[] args)
         {
 
-
-            webReq p = new webReq();
+           webReq p = new webReq();
             p.webRequest();
-
         }
 
         void webRequest()
         {
             WebRequest request = WebRequest.Create("http://xml.donbest.com/v2/schedule/?token=F-!--!!_-vV73-_M");
-
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
             Console.WriteLine(response.StatusDescription);
 
             Stream dataStream = response.GetResponseStream();
-
             StreamReader reader = new StreamReader(dataStream);
 
             string responseFromServer = reader.ReadToEnd();
@@ -43,8 +39,6 @@ namespace wRequest
             response.Close();
 
             extractSports(responseFromServer);
-
-
         }
 
         private string loadXml(string text)
@@ -66,22 +60,17 @@ namespace wRequest
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(xmlText);
 
-
             iteraChild(xmlDoc.DocumentElement, 0, "", "");
-            Console.WriteLine("end");
-            Console.WriteLine("end");
-
         }
 
-        public int tipoConsulta;
+      
 
         private void iteraChild(XmlNode xmlNode, int queriesCount, string sportId, string leagueId)
         {
 
             queriesCount += 1;
             string query="", query2="";
-           
-         
+            
             Dictionary<string, string> dictionary = new Dictionary<string, string>();
 
             string tableName;
@@ -91,17 +80,14 @@ namespace wRequest
                 //'because its from the root, all the child nodes gonna be checked'
 
                 foreach (XmlNode xmlNode2 in xmlNode.ChildNodes)
-
-                
-
                 {
 
+                    //Next lines defines ids of league and sport
                     if (xmlNode2.Name == "league")
                     {
-                        leagueId = (xmlNode2.Attributes[0].Value);
-                     
-                       
+                        leagueId = (xmlNode2.Attributes[0].Value);              
                     }
+
                     else if (xmlNode2.Name=="sport")
                     {
                         sportId = (xmlNode2.Attributes[0].Value);
@@ -110,7 +96,7 @@ namespace wRequest
 
                     if ((xmlNode2.Name == "lines"))
                     {
-                   
+                   //Lines actually will not be saved, due to indications of Ezequiel
                     }
 
                     else if(xmlNode2.Name == "event")
@@ -133,8 +119,6 @@ namespace wRequest
                         {
                             query = asignQuery1Column(item.Key, query);
                             query2 = asignQueryValue(query2, item.Key, item.Value);
-
-
                         }
 
                         asignFinalValuesToQueryes(query, query2, tipoConsulta);
@@ -182,6 +166,7 @@ namespace wRequest
                                         foreach (XmlAttribute xmlAttribute2 in xmlNode.Attributes)
                                         {
 
+                                           //this code part is actually not executting due to problem of so many updates in line.
                                             //Console.Write(xmlNode.Name + " - " + xmlAttribute.Name + " - " + xmlAttribute.Value);
                                             query = updateQueryStart(query, xmlNode.Name);
                                             query2 = "";
@@ -443,7 +428,7 @@ namespace wRequest
 
         private int grandChildNodesCount(XmlNode xmlNode)
         {
-            Boolean res;
+           
 
             int grandChildCount = 0;
 
@@ -534,6 +519,8 @@ namespace wRequest
 
         string asignFinalValuesToQueryes(string query1, string query2, int tipoConsulta)
 
+            //If tipoConsulta=1 then its insert, if not, its update
+
         {
             string finalQuery;
             if (tipoConsulta == 1)
@@ -582,7 +569,6 @@ namespace wRequest
 
 
             var localTime = DateTimeOffset.Parse(originalTime).UtcDateTime;
-
             TimeZoneInfo easternTimeZone = TimeZoneInfo.FindSystemTimeZoneById(
                                  "Eastern Standard Time");
 
@@ -593,7 +579,6 @@ namespace wRequest
 
             DateTime easternDateTime = TimeZoneInfo.ConvertTimeFromUtc(localTime,
                                                                        easternTimeZone);
-
             return easternDateTime.ToString();
         }
 

@@ -32,6 +32,39 @@ namespace DataLayer
             return rowsaffected;
 
         }
+
+     
+
+        public object ExeStoredProcedure(string storedProcedureName)
+        {
+            using (con)
+            {
+                con.Open();
+
+                using (SqlCommand command = new SqlCommand(storedProcedureName, con) { CommandType = System.Data.CommandType.StoredProcedure })
+                {
+
+                    command.Parameters.AddWithValue("@YourSpParameter", "ParameterValue");
+                    command.Parameters.AddWithValue("@YourSpParameter", "ParameterValue");
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        //read the data
+                        while (reader.Read())
+                        {
+                            //label1.Text = reader["yourcolumn"].ToString();
+                        }
+
+                        return reader;
+                    }
+
+
+                }
+            }
+          
+        }
+
+
         public object ExeScalar(string insertString)
         {
 
