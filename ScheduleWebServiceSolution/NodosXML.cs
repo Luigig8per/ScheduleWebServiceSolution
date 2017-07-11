@@ -376,7 +376,7 @@ namespace wRequest
                                         }
                                         catch
                                         {
-                                            Console.WriteLine("ya existe " + xmlNodeName + "_" + xmlAttribute3.Name, ", " + xmlAttribute3.Value);
+                                            Console.WriteLine("ya existe " + xmlNodeName + xmlNode2.Name + "_" + xmlAttribute3.Name, ", " + xmlAttribute3.Value);
                                         }
 
                                     }
