@@ -74,6 +74,7 @@ namespace wRequest
             Dictionary<string, string> dictionary = new Dictionary<string, string>();
 
             string tableName;
+            string tableId="0";
 
             if (xmlNode.HasChildNodes)
             {
@@ -102,8 +103,13 @@ namespace wRequest
                     else if(xmlNode2.Name == "event")
                     {
 
+              
+
                        dictionary= storeEventFields(xmlNode2);
-                        query = "insert into event ";
+
+                      
+
+                        query =  "insert into event ";
                         query2 = "values ";
 
                         query += "(" + xmlNode.Name + "_id,";
@@ -117,11 +123,21 @@ namespace wRequest
 
                         foreach (var item in dictionary)
                         {
+                            if (item.Key=="id")
+                            {
+                                tableId = item.Value;
+                            }
+                          
                             query = asignQuery1Column(item.Key, query);
                             query2 = asignQueryValue(query2, item.Key, item.Value);
                         }
 
-                        asignFinalValuesToQueryes(query, query2, tipoConsulta);
+                        //Next line we are working on insert and update, but we need to better do a merge.
+                        asignFinalValuesToEventQueryesWithIdCheck(query, query2, tipoConsulta, tableId);
+
+                        //Table id reset to 0 in unexpected case that id not appears in table
+                        tableId = "0";
+
                     }
                       
                     else
@@ -275,6 +291,8 @@ namespace wRequest
 
 
         }
+
+
 
         private Dictionary<string, string>  addAttsToDictionary(XmlNode xmlNode, Dictionary<string, string> dictionary, Boolean child)
         {
@@ -533,6 +551,8 @@ namespace wRequest
 
             }
 
+
+
             finalQuery = (query1 + " " + query2);
 
             Console.WriteLine(finalQuery);
@@ -543,6 +563,54 @@ namespace wRequest
             catch (Exception ex)
             {
                 Console.WriteLine("Insert error:" + ex.Message);
+            }
+
+
+
+
+            return (finalQuery);
+
+
+        }
+
+        string asignFinalValuesToEventQueryesWithIdCheck(string query1, string query2, int tipoConsulta, string idTable)
+
+        //If tipoConsulta=1 then its insert, if not, its update
+
+        {
+            query1 = "IF (NOT EXISTS(SELECT * FROM event WHERE id=" + idTable + ")) BEGIN " + query1;
+            string finalQuery;
+            if (tipoConsulta == 1)
+            {
+                query1 += "timeReceived) ";
+                query2 += "getDate())";
+
+                query1 = query1.Replace(",)", ")");
+                query2 = query2.Replace(",)", ")");
+
+            }
+
+
+            finalQuery = (query1 + " " + query2 + " END");
+
+            // HERE ENDS INSERT AND START UPDATE
+
+            finalQuery += "BEGIN UPDATE EVENT SET ";
+
+            //Here attached the tables and values
+            finalQuery += "";
+
+            finalQuery += "WHERE ID= " + idTable + ", END";
+
+            try
+            {
+                doQuery(finalQuery);
+               
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Insert error at insert with check:" + ex.Message + ":");
+                Console.WriteLine(finalQuery);
             }
 
 
