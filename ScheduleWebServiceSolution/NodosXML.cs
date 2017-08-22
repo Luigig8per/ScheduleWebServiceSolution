@@ -25,7 +25,7 @@ namespace wRequest
 
         void webRequest()
         {
-            WebRequest request = WebRequest.Create("http://xml.donbest.com/v2/schedule/?token=F-!--!!_-vV73-_M");
+            WebRequest request = WebRequest.Create("http://xml.donbest.com/v2/schedule/?token=Kc-S9Do2294b6!z!");
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Console.WriteLine(response.StatusDescription);
 
@@ -38,7 +38,23 @@ namespace wRequest
             dataStream.Close();
             response.Close();
 
+            try
+            {
+
+            
             extractSports(responseFromServer);
+
+            }
+
+            catch (Exception ex)
+
+            {
+
+                Console.WriteLine("Error:" + ex.Message);
+            }
+
+
+
         }
 
         private string loadXml(string text)
@@ -133,7 +149,7 @@ namespace wRequest
                         }
 
                         //Next line we are working on insert and update, but we need to better do a merge.
-                        asignFinalValuesToEventQueryesWithIdCheck(query, query2, tipoConsulta, tableId);
+                        asignFinalValuesToEventQueryesWithIdCheck(query, query2, tipoConsulta, "event", tableId);
 
                         //Table id reset to 0 in unexpected case that id not appears in table
                         tableId = "0";
@@ -272,7 +288,9 @@ namespace wRequest
 
                                     }
                                 }
-                                asignFinalValuesToQueryes(query, query2, tipoConsulta);
+
+                                //''Groups: tableName. id: 
+                                asignFinalValuesToEventQueryesWithIdCheck(query, query2, tipoConsulta, tableName, xmlNode2.Attributes[0].Value);
 
                             }
 
@@ -540,8 +558,10 @@ namespace wRequest
             //If tipoConsulta=1 then its insert, if not, its update
 
         {
+
             string finalQuery;
             if (tipoConsulta == 1)
+
             {
                 query1 += "timeReceived) ";
                 query2 += "getDate())";
@@ -573,12 +593,12 @@ namespace wRequest
 
         }
 
-        string asignFinalValuesToEventQueryesWithIdCheck(string query1, string query2, int tipoConsulta, string idTable)
+        string asignFinalValuesToEventQueryesWithIdCheck(string query1, string query2, int tipoConsulta, string tableName, string idTable)
 
         //If tipoConsulta=1 then its insert, if not, its update
 
         {
-            query1 = "IF (NOT EXISTS(SELECT * FROM event WHERE id=" + idTable + ")) BEGIN " + query1;
+            query1 = "IF (NOT EXISTS(SELECT * FROM " + tableName + " WHERE id=" + idTable + ")) BEGIN " + query1;
             string finalQuery;
             if (tipoConsulta == 1)
             {
@@ -595,12 +615,12 @@ namespace wRequest
 
             // HERE ENDS INSERT AND START UPDATE
 
-            finalQuery += "BEGIN UPDATE EVENT SET ";
+            //finalQuery += "BEGIN UPDATE EVENT SET ";
 
-            //Here attached the tables and values
-            finalQuery += "";
+            ////Here attached the tables and values
+            //finalQuery += "";
 
-            finalQuery += "WHERE ID= " + idTable + ", END";
+            //finalQuery += "WHERE ID= " + idTable + ", END";
 
             try
             {
