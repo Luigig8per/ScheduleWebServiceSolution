@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -18,14 +19,16 @@ namespace wRequest
         public int tipoConsulta;
         static void Main(string[] args)
         {
+            Version version = Assembly.GetExecutingAssembly().GetName().Version;
+            Console.WriteLine("Running Don Best Schedule " + version);
 
-           webReq p = new webReq();
+            webReq p = new webReq();
             p.webRequest();
         }
 
         void webRequest()
         {
-            WebRequest request = WebRequest.Create("http://xml.donbest.com/v2/schedule/?token=Kc-S9Do2294b6!z!");
+            WebRequest request = WebRequest.Create("http://xml.donbest.com/v2/schedule/?token=B7R3b_ZgV7!FeF_!");
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Console.WriteLine(response.StatusDescription);
 
